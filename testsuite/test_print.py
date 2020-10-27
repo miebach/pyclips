@@ -42,11 +42,9 @@ def i_returnOutput(func, args=None, kwargs=None):
     sys.stdout = io
     try:
         if args is None:
-            if kwargs is None: r = func()
-            else: r = func(**kwargs)
+            r = func() if kwargs is None else func(**kwargs)
         else:
-            if kwargs is None: r = func(*args)
-            else: r = func(*args, **kwargs)
+            r = func(*args) if kwargs is None else func(*args, **kwargs)
         s = io.getvalue().strip()
         sys.stdout = save_stdout
         return r, s

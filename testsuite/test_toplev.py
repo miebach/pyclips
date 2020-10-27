@@ -33,9 +33,8 @@ class ctc_Toplevel(ctestcase):
 
     def ctf_Top_01(self):
         """Testing: BatchStar, Save, BSave"""
-        f = open("t.clp", 'w')
-        f.write(file01)
-        f.close()
+        with open("t.clp", 'w') as f:
+            f.write(file01)
         for x in self.envdict.keys():
             e = self.envdict[x]
             e.Clear()
