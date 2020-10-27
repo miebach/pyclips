@@ -31,26 +31,23 @@ class ctestcase(unittest.TestCase):
         clips.DebugConfig.UnwatchAll()
         self.envdict['env'].DebugConfig.UnwatchAll()
         s = clips.TraceStream.Read()
-        fc = open("trace.out", 'a')
-        fc.write("=" * 78 + "\n")
-        fc.write("--> %s\n" % self.__class__.__name__)
-        fc.write("-" * 78 + "\n")
-        fc.write("%s" % s)
-        fc.write("\n\n\n")
-        fc.close()
+        with open("trace.out", 'a') as fc:
+            fc.write("=" * 78 + "\n")
+            fc.write("--> %s\n" % self.__class__.__name__)
+            fc.write("-" * 78 + "\n")
+            fc.write("%s" % s)
+            fc.write("\n\n\n")
         s = clips.ErrorStream.Read()
-        fc = open("error.out", 'a')
-        fc.write("=" * 78 + "\n")
-        fc.write("--> %s\n" % self.__class__.__name__)
-        fc.write("-" * 78 + "\n")
-        fc.write("%s" % s)
-        fc.write("\n\n\n")
-        fc.close()
+        with open("error.out", 'a') as fc:
+            fc.write("=" * 78 + "\n")
+            fc.write("--> %s\n" % self.__class__.__name__)
+            fc.write("-" * 78 + "\n")
+            fc.write("%s" % s)
+            fc.write("\n\n\n")
         o = gc.collect()
-        fc = open("garbage.out", 'a')
-        fc.write("%s --> %s unreached objects\n" % (
-            self.__class__.__name__, o))
-        fc.close()
+        with open("garbage.out", 'a') as fc:
+            fc.write("%s --> %s unreached objects\n" % (
+                self.__class__.__name__, o))
 
 
 # end.

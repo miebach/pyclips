@@ -1909,7 +1909,7 @@ class Generic(object):
         o = _c.getDefmethodList(self.__defgeneric)
         li, mli = Multifield(_cl2py(o)), Multifield([])
         l = len(li) / 2
-        for x in range(0, l):
+        for x in range(l):
             mli.append(li[2 * x + 1])
         return mli
 
@@ -1948,14 +1948,8 @@ class Generic(object):
     @_accepts_method(None, None, (int, long), None)
     def AddMethod(self, restrictions, actions, midx=None, comment=None):
         """Add a method to this Generic, given restrictions and actions"""
-        if comment:
-            cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-        else:
-            cmtstr = ""
-        if midx:
-            indstr = str(midx)
-        else:
-            indstr = ""
+        cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
+        indstr = str(midx) if midx else ""
         if type(restrictions) in (tuple, list):
             rstr = ""
             for x in restrictions:
@@ -2293,10 +2287,7 @@ class Class(object):
     @_forces_method(str, str, None)
     def BuildSubclass(self, name, text="", comment=None):
         """build a subclass of this Class with specified name and body"""
-        if comment:
-            cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-        else:
-            cmtstr = ""
+        cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
         clname = _c.getDefclassName(self.__defclass)
         cltext = "(is-a %s)" % clname + text
         construct = "(defclass %s %s %s)" % (name, cmtstr, cltext)
@@ -2360,12 +2351,9 @@ class Class(object):
     @_forces_method(str, str, str, None, None)
     def AddMessageHandler(self, name, args, text, htype=PRIMARY, comment=None):
         """build a MessageHandler for this class with arguments and body"""
-        if comment:
-            cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-        else:
-            cmtstr = ""
+        cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
         htype = htype.lower()
-        if not htype in (AROUND, BEFORE, PRIMARY, AFTER):
+        if htype not in (AROUND, BEFORE, PRIMARY, AFTER):
             raise ValueError("htype must be AROUND, BEFORE, PRIMARY or AFTER")
         if type(args) in (tuple, list):
             sargs = " ".join(args)
@@ -2431,7 +2419,7 @@ class Class(object):
         o = _c.getDefmessageHandlerList(self.__defclass, False)
         li, rv = Multifield(_cl2py(o)), []
         l = len(li) / 3
-        for x in range(0, l):
+        for x in range(l):
             rv.append(Multifield([li[x * 3], li[x * 3 + 1], li[x * 3 + 2]]))
         return Multifield(rv)
 
@@ -2440,7 +2428,7 @@ class Class(object):
         o = _c.getDefmessageHandlerList(self.__defclass, True)
         li, rv = Multifield(_cl2py(o)), []
         l = len(li) / 3
-        for x in range(0, l):
+        for x in range(l):
             rv.append(Multifield([li[x * 3], li[x * 3 + 1], li[x * 3 + 2]]))
         return Multifield(rv)
 
@@ -2590,66 +2578,61 @@ class Instance(object):
     @_forces_method(str, None)
     def Send(self, msg, args=None):
         """send specified message with the given arguments to Instance"""
-        if args is not None:
-            t = type(args)
-            if t == str:
-                sargs = args
-            elif t == unicode:
-                sargs = str(args)
-            elif isinstance(args, str):
-                sargs = str(args)
-            elif isinstance(args, unicode):
-                sargs = str(args)
-            elif t in (ClipsIntegerType, ClipsFloatType, ClipsStringType,
-                       ClipsSymbolType, ClipsNilType, ClipsInstanceNameType,
-                       ClipsMultifieldType):
-                sargs = _py2clsyntax(args)
-            elif t in (tuple, list):
-                li = []
-                for x in args:
-                    t1 = type(x)
-                    if t1 in (ClipsIntegerType, ClipsFloatType,
-                              ClipsStringType, ClipsSymbolType, ClipsNilType,
-                              ClipsInstanceNameType, ClipsMultifieldType):
-                        li.append(_py2clsyntax(x))
-                    elif t1 in (int, long):
-                        li.append(Integer(int(x)).clsyntax())
-                    elif t1 == float:
-                        li.append(Float(x).clsyntax())
-                    elif t1 in (str, unicode):
-                        li.append(String(x).clsyntax())
-                    elif isinstance(x, int):
-                        li.append(Integer(x).clsyntax())
-                    elif isinstance(x, long):
-                        li.append(Integer(x).clsyntax())
-                    elif isinstance(x, float):
-                        li.append(Float(x).clsyntax())
-                    elif isinstance(x, str):
-                        li.append(String(x).clsyntax())
-                    elif isinstance(x, unicode):
-                        li.append(String(x).clsyntax())
-                    else:
-                        li.append(str(x))
-                sargs = " ".join(li)
-            elif t in (int, long):
-                sargs = Integer(args).clsyntax()
-            elif t == float:
-                sargs = Float(args).clsyntax()
-            elif isinstance(args, str):
-                sargs = str(args)
-            elif isinstance(args, unicode):
-                sargs = str(args)
-            elif isinstance(args, int):
-                sargs = Integer(args).clsyntax()
-            elif isinstance(args, long):
-                sargs = Integer(args).clsyntax()
-            elif isinstance(args, float):
-                sargs = Float(args).clsyntax()
-            else:
-                sargs = str(args)
-            return _cl2py(_c.send(self.__instance, msg, sargs))
-        else:
+        if args is None:
             return _cl2py(_c.send(self.__instance, msg))
+        t = type(args)
+        if t == str:
+            sargs = args
+        elif t == unicode:
+            sargs = str(args)
+        elif isinstance(args, str):
+            sargs = str(args)
+        elif isinstance(args, unicode):
+            sargs = str(args)
+        elif t in (ClipsIntegerType, ClipsFloatType, ClipsStringType,
+                   ClipsSymbolType, ClipsNilType, ClipsInstanceNameType,
+                   ClipsMultifieldType):
+            sargs = _py2clsyntax(args)
+        elif t in (tuple, list):
+            li = []
+            for x in args:
+                t1 = type(x)
+                if t1 in (ClipsIntegerType, ClipsFloatType,
+                          ClipsStringType, ClipsSymbolType, ClipsNilType,
+                          ClipsInstanceNameType, ClipsMultifieldType):
+                    li.append(_py2clsyntax(x))
+                elif t1 in (int, long):
+                    li.append(Integer(int(x)).clsyntax())
+                elif t1 == float:
+                    li.append(Float(x).clsyntax())
+                elif t1 in (str, unicode):
+                    li.append(String(x).clsyntax())
+                elif isinstance(x, int):
+                    li.append(Integer(x).clsyntax())
+                elif isinstance(x, long):
+                    li.append(Integer(x).clsyntax())
+                elif isinstance(x, float):
+                    li.append(Float(x).clsyntax())
+                elif isinstance(x, str):
+                    li.append(String(x).clsyntax())
+                elif isinstance(x, unicode):
+                    li.append(String(x).clsyntax())
+                else:
+                    li.append(str(x))
+            sargs = " ".join(li)
+        elif t in (int, long):
+            sargs = Integer(args).clsyntax()
+        elif t == float:
+            sargs = Float(args).clsyntax()
+        elif isinstance(args, int):
+            sargs = Integer(args).clsyntax()
+        elif isinstance(args, long):
+            sargs = Integer(args).clsyntax()
+        elif isinstance(args, float):
+            sargs = Float(args).clsyntax()
+        else:
+            sargs = str(args)
+        return _cl2py(_c.send(self.__instance, msg, sargs))
 
     def __property_getName(self):
         return InstanceName(_c.getInstanceName(self.__instance))
@@ -2790,10 +2773,7 @@ class Module(object):
     @_forces_method(str, str, None)
     def BuildTemplate(self, name, text, comment=None):
         """build a Template object with specified name and body"""
-        if comment:
-            cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-        else:
-            cmtstr = ""
+        cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
         mname = self.Name
         construct = "(deftemplate %s::%s %s %s)" % (mname, name, cmtstr, text)
         _c.build(construct)
@@ -2827,10 +2807,7 @@ class Module(object):
     @_forces_method(str, str, None)
     def BuildDeffacts(self, name, text, comment=None):
         """build a Deffacts object with specified name and body"""
-        if comment:
-            cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-        else:
-            cmtstr = ""
+        cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
         mname = self.Name
         construct = "(deffacts %s::%s %s %s)" % (mname, name, cmtstr, text)
         _c.build(construct)
@@ -2854,10 +2831,7 @@ class Module(object):
     @_forces_method(str, str, str, None)
     def BuildRule(self, name, lhs, rhs, comment=None):
         """build a Rule object with specified name and LHS/RHS"""
-        if comment:
-            cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-        else:
-            cmtstr = ""
+        cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
         mname = self.Name
         construct = "(defrule %s::%s %s %s => %s)" % (
             mname, name, cmtstr, lhs, rhs)
@@ -2940,10 +2914,7 @@ class Module(object):
     @_forces_method(str, None, str, None)
     def BuildFunction(self, name, args, text, comment=None):
         """build a Function with specified name, body and arguments"""
-        if comment:
-            cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-        else:
-            cmtstr = ""
+        cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
         mname = self.Name
         if type(args) in (tuple, list):
             args = " ".join(args)
@@ -2972,10 +2943,7 @@ class Module(object):
     @_forces_method(str, None)
     def BuildGeneric(self, name, comment=None):
         """build a Generic with specified name"""
-        if comment:
-            cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-        else:
-            cmtstr = ""
+        cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
         mname = self.Name
         construct = "(defgeneric %s::%s %s)" % (mname, name, cmtstr)
         _c.build(construct)
@@ -2999,10 +2967,7 @@ class Module(object):
     @_forces_method(str, str, None)
     def BuildClass(self, name, text, comment=None):
         """build a Class with specified name and body"""
-        if comment:
-            cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-        else:
-            cmtstr = ""
+        cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
         mname = self.Name
         construct = "(defclass %s::%s %s %s)" % (mname, name, cmtstr, text)
         _c.build(construct)
@@ -3056,10 +3021,7 @@ class Module(object):
     @_forces_method(str, str, None)
     def BuildDefinstances(self, name, text, comment=None):
         """build a Definstances with specified name and body"""
-        if comment:
-            cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-        else:
-            cmtstr = ""
+        cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
         mname = self.Name
         construct = "(definstances %s::%s %s %s)" % (
             mname, name, cmtstr, text)
@@ -3129,10 +3091,7 @@ def FindTemplate(s):
 @_forces(str, str, None)
 def BuildTemplate(name, text, comment=None):
     """build a Template object with specified name and body"""
-    if comment:
-        cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-    else:
-        cmtstr = ""
+    cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
     construct = "(deftemplate %s %s %s)" % (name, cmtstr, text)
     _c.build(construct)
     return Template(_c.findDeftemplate(name))
@@ -3253,10 +3212,7 @@ def FindDeffacts(s):
 @_forces(str, str, None)
 def BuildDeffacts(name, text, comment=None):
     """build a Deffacts object with specified name and body"""
-    if comment:
-        cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-    else:
-        cmtstr = ""
+    cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
     construct = "(deffacts %s %s %s)" % (name, cmtstr, text)
     _c.build(construct)
     return Deffacts(_c.findDeffacts(name))
@@ -3309,10 +3265,7 @@ def FindRule(s):
 @_forces(str, str, str, None)
 def BuildRule(name, lhs, rhs, comment=None):
     """build a Rule object with specified name and body"""
-    if comment:
-        cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-    else:
-        cmtstr = ""
+    cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
     construct = "(defrule %s %s %s => %s)" % (name, cmtstr, lhs, rhs)
     _c.build(construct)
     return Rule(_c.findDefrule(name))
@@ -3372,10 +3325,7 @@ def FindModule(name):
 @_forces(str, str, None)
 def BuildModule(name, text="", comment=None):
     """build a Module with specified name and body"""
-    if comment:
-        cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-    else:
-        cmtstr = ""
+    cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
     construct = "(defmodule %s %s %s)" % (name, cmtstr, text)
     _c.build(construct)
     return Module(_c.findDefmodule(name))
@@ -3494,10 +3444,7 @@ def FindFunction(name):
 @_forces(str, None, str, None)
 def BuildFunction(name, args, text, comment=None):
     """build a Function with specified name, body and arguments"""
-    if comment:
-        cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-    else:
-        cmtstr = ""
+    cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
     if type(args) in (tuple, list):
         args = " ".join(args)
     elif args is None:
@@ -3551,10 +3498,7 @@ def FindGeneric(name):
 @_forces(str, None)
 def BuildGeneric(name, comment=None):
     """build a Generic with specified name and body"""
-    if comment:
-        cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-    else:
-        cmtstr = ""
+    cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
     construct = "(defgeneric %s %s)" % (name, cmtstr)
     _c.build(construct)
     return Generic(_c.findDefgeneric(name))
@@ -3615,10 +3559,7 @@ def FindClass(name):
 @_forces(str, str, None)
 def BuildClass(name, text, comment=None):
     """build a Class with specified name and body"""
-    if comment:
-        cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-    else:
-        cmtstr = ""
+    cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
     construct = "(defclass %s %s %s)" % (name, cmtstr, text)
     _c.build(construct)
     return Class(_c.findDefclass(name))
@@ -3652,11 +3593,9 @@ def BrowseClasses(classname):
 @_forces(str, str, None, str, None, None)
 def BuildMessageHandler(name, hclass, args, text, htype=PRIMARY, comment=None):
     """build a MessageHandler for specified class with arguments and body"""
-    if comment:
-        cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-    else: cmtstr = ""
+    cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
     htype = htype.lower()
-    if not htype in (AROUND, BEFORE, PRIMARY, AFTER):
+    if htype not in (AROUND, BEFORE, PRIMARY, AFTER):
         raise ValueError("htype must be in AROUND, BEFORE, PRIMARY, AFTER")
     if type(args) in (tuple, list):
         sargs = " ".join(args)
@@ -3677,7 +3616,7 @@ def MessageHandlerList():
     o = _c.getDefmessageHandlerList()
     li, rv = Multifield(_cl2py(o)), []
     l = len(li) / 3
-    for x in range(0, l):
+    for x in range(l):
         rv.append(Multifield([li[x * 3], li[x * 3 + 1], li[x * 3 + 2]]))
     return Multifield(rv)
 #}}
@@ -3840,10 +3779,7 @@ def FindDefinstances(name):
 @_forces(str, str, None)
 def BuildDefinstances(name, text, comment=None):
     """build a Definstances with specified name and body"""
-    if comment:
-        cmtstr = '"%s"' % str(comment).replace('"', '\\"')
-    else:
-        cmtstr = ""
+    cmtstr = '"%s"' % str(comment).replace('"', '\\"') if comment else ""
     construct = "(definstances %s %s %s)" % (name, cmtstr, text)
     _c.build(construct)
     return Definstances(_c.findDefinstances(name))
@@ -4019,62 +3955,61 @@ def Eval(expr):
 @_forces(str, None)
 def Call(func, args=None):
     """call a function with the given argument string or tuple"""
-    if args is not None:
-        t = type(args)
-        if t == str:
-            sargs = args
-        if t == unicode:
-            sargs = str(args)
-        elif t in (ClipsIntegerType, ClipsFloatType, ClipsStringType,
-                   ClipsSymbolType, ClipsNilType, ClipsInstanceNameType,
-                   ClipsMultifieldType):
-            sargs = _py2clsyntax(args)
-        elif isinstance(args, str):
-            sargs = str(args)
-        elif isinstance(args, unicode):
-            sargs = str(args)
-        elif t in (tuple, list):
-            li = []
-            for x in args:
-                t1 = type(x)
-                if t1 in (ClipsIntegerType, ClipsFloatType, ClipsStringType,
-                          ClipsSymbolType, ClipsNilType,
-                          ClipsInstanceNameType, ClipsMultifieldType):
-                    li.append(_py2clsyntax(x))
-                elif t1 in (int, long):
-                    li.append(Integer(int(x)).clsyntax())
-                elif t1 == float:
-                    li.append(Float(x).clsyntax())
-                elif t1 in (str, unicode):
-                    li.append(String(x).clsyntax())
-                elif isinstance(x, int):
-                    li.append(Integer(x).clsyntax())
-                elif isinstance(x, long):
-                    li.append(Integer(x).clsyntax())
-                elif isinstance(x, float):
-                    li.append(Float(x).clsyntax())
-                elif isinstance(x, str):
-                    li.append(String(x).clsyntax())
-                elif isinstance(x, unicode):
-                    li.append(String(x).clsyntax())
-                else:
-                    li.append(str(x))
-            sargs = " ".join(li)
-        elif t in (int, long):
-            sargs = Integer(int(args)).clsyntax()
-        elif t == float:
-            sargs = Float(args).clsyntax()
-        elif isinstance(args, int):
-            sargs = Integer(args).clsyntax()
-        elif isinstance(args, long):
-            sargs = Integer(args).clsyntax()
-        elif isinstance(args, float):
-            sargs = Float(args).clsyntax()
-        else:
-            sargs = str(args)
-        return _cl2py(_c.functionCall(func, sargs))
-    else:
+    if args is None:
         return _cl2py(_c.functionCall(func))
+    t = type(args)
+    if t == str:
+        sargs = args
+    if t == unicode:
+        sargs = str(args)
+    elif t in (ClipsIntegerType, ClipsFloatType, ClipsStringType,
+               ClipsSymbolType, ClipsNilType, ClipsInstanceNameType,
+               ClipsMultifieldType):
+        sargs = _py2clsyntax(args)
+    elif isinstance(args, str):
+        sargs = str(args)
+    elif isinstance(args, unicode):
+        sargs = str(args)
+    elif t in (tuple, list):
+        li = []
+        for x in args:
+            t1 = type(x)
+            if t1 in (ClipsIntegerType, ClipsFloatType, ClipsStringType,
+                      ClipsSymbolType, ClipsNilType,
+                      ClipsInstanceNameType, ClipsMultifieldType):
+                li.append(_py2clsyntax(x))
+            elif t1 in (int, long):
+                li.append(Integer(int(x)).clsyntax())
+            elif t1 == float:
+                li.append(Float(x).clsyntax())
+            elif t1 in (str, unicode):
+                li.append(String(x).clsyntax())
+            elif isinstance(x, int):
+                li.append(Integer(x).clsyntax())
+            elif isinstance(x, long):
+                li.append(Integer(x).clsyntax())
+            elif isinstance(x, float):
+                li.append(Float(x).clsyntax())
+            elif isinstance(x, str):
+                li.append(String(x).clsyntax())
+            elif isinstance(x, unicode):
+                li.append(String(x).clsyntax())
+            else:
+                li.append(str(x))
+        sargs = " ".join(li)
+    elif t in (int, long):
+        sargs = Integer(int(args)).clsyntax()
+    elif t == float:
+        sargs = Float(args).clsyntax()
+    elif isinstance(args, int):
+        sargs = Integer(args).clsyntax()
+    elif isinstance(args, long):
+        sargs = Integer(args).clsyntax()
+    elif isinstance(args, float):
+        sargs = Float(args).clsyntax()
+    else:
+        sargs = str(args)
+    return _cl2py(_c.functionCall(func, sargs))
 #}}
 
 #{{FUNCTION
@@ -4099,7 +4034,7 @@ def Reset():
 def Clear():
     """clear Environment"""
     _c.clear()
-    if not 'self' in locals().keys():
+    if 'self' not in locals().keys():
         _setStockClasses()
 #}}
 
@@ -4130,31 +4065,27 @@ def _setParentModuleDict(d):
 # provide a way for Environments to do the same as they become current
 def _setStockClasses():
     """reset stock classes to the ones of current Environment"""
-    global FLOAT_CLASS, INTEGER_CLASS, SYMBOL_CLASS, STRING_CLASS, \
-           MULTIFIELD_CLASS, EXTERNAL_ADDRESS_CLASS, FACT_ADDRESS_CLASS, \
-           INSTANCE_ADDRESS_CLASS, INSTANCE_NAME_CLASS, OBJECT_CLASS, \
-           PRIMITIVE_CLASS, NUMBER_CLASS, LEXEME_CLASS, ADDRESS_CLASS, \
-           INSTANCE_CLASS, USER_CLASS, INITIAL_OBJECT_CLASS
-    # the following definitions are only valid at submodule level
-    FLOAT_CLASS = Class(_c.findDefclass("FLOAT"))
-    INTEGER_CLASS = Class(_c.findDefclass("INTEGER"))
-    SYMBOL_CLASS = Class(_c.findDefclass("SYMBOL"))
-    STRING_CLASS = Class(_c.findDefclass("STRING"))
-    MULTIFIELD_CLASS = Class(_c.findDefclass("MULTIFIELD"))
-    EXTERNAL_ADDRESS_CLASS = Class(_c.findDefclass("EXTERNAL-ADDRESS"))
-    FACT_ADDRESS_CLASS = Class(_c.findDefclass("FACT-ADDRESS"))
-    INSTANCE_ADDRESS_CLASS = Class(_c.findDefclass("INSTANCE-ADDRESS"))
-    INSTANCE_NAME_CLASS = Class(_c.findDefclass("INSTANCE-NAME"))
-    OBJECT_CLASS = Class(_c.findDefclass("OBJECT"))
-    PRIMITIVE_CLASS = Class(_c.findDefclass("PRIMITIVE"))
-    NUMBER_CLASS = Class(_c.findDefclass("NUMBER"))
-    LEXEME_CLASS = Class(_c.findDefclass("LEXEME"))
-    ADDRESS_CLASS = Class(_c.findDefclass("ADDRESS"))
-    INSTANCE_CLASS = Class(_c.findDefclass("INSTANCE"))
-    USER_CLASS = Class(_c.findDefclass("USER"))
-    INITIAL_OBJECT_CLASS = Class(_c.findDefclass("INITIAL-OBJECT"))
+    global FLOAT_CLASS, INTEGER_CLASS, SYMBOL_CLASS, STRING_CLASS
     # modify the importing package namespace using the provided dictionary
     if __parent_module_dict__:
+        # the following definitions are only valid at submodule level
+        FLOAT_CLASS = Class(_c.findDefclass("FLOAT"))
+        INTEGER_CLASS = Class(_c.findDefclass("INTEGER"))
+        SYMBOL_CLASS = Class(_c.findDefclass("SYMBOL"))
+        STRING_CLASS = Class(_c.findDefclass("STRING"))
+        MULTIFIELD_CLASS = Class(_c.findDefclass("MULTIFIELD"))
+        EXTERNAL_ADDRESS_CLASS = Class(_c.findDefclass("EXTERNAL-ADDRESS"))
+        FACT_ADDRESS_CLASS = Class(_c.findDefclass("FACT-ADDRESS"))
+        INSTANCE_ADDRESS_CLASS = Class(_c.findDefclass("INSTANCE-ADDRESS"))
+        INSTANCE_NAME_CLASS = Class(_c.findDefclass("INSTANCE-NAME"))
+        OBJECT_CLASS = Class(_c.findDefclass("OBJECT"))
+        PRIMITIVE_CLASS = Class(_c.findDefclass("PRIMITIVE"))
+        NUMBER_CLASS = Class(_c.findDefclass("NUMBER"))
+        LEXEME_CLASS = Class(_c.findDefclass("LEXEME"))
+        ADDRESS_CLASS = Class(_c.findDefclass("ADDRESS"))
+        INSTANCE_CLASS = Class(_c.findDefclass("INSTANCE"))
+        USER_CLASS = Class(_c.findDefclass("USER"))
+        INITIAL_OBJECT_CLASS = Class(_c.findDefclass("INITIAL-OBJECT"))
         __parent_module_dict__['FLOAT_CLASS'] = FLOAT_CLASS
         __parent_module_dict__['INTEGER_CLASS'] = INTEGER_CLASS
         __parent_module_dict__['SYMBOL_CLASS'] = SYMBOL_CLASS
@@ -4192,10 +4123,7 @@ class _clips_Stream(object):
     def __init__(self, stream, name=None):
         """stream object constructor"""
         self.__stream = stream
-        if name is None:
-            self.__name = 'Internal'
-        else:
-            self.__name = name
+        self.__name = 'Internal' if name is None else name
 
     def __repr__(self):
         return "<%s Stream>" % self.__name
@@ -4212,10 +4140,7 @@ class _clips_WriteStream(object):
     def __init__(self, stream, name=None):
         """stream object constructor"""
         self.__stream = stream
-        if name is None:
-            self.__name = 'Internal'
-        else:
-            self.__name = name
+        self.__name = 'Internal' if name is None else name
 
     def __repr__(self):
         return "<%s Stream>" % self.__name

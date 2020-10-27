@@ -236,11 +236,10 @@ setup_h_templ = """\
 #  here just because it is used as global in some functions below
 IMPORTED_SYMBOLS = []
 def find_imported_symbols(filename):
-    f = open(filename)
-    li = [x for x in map(str.strip, f.readlines())
-          if x.startswith('ADD_MANIFEST_CONSTANT(')
-          or x.startswith('MMAP_ENTRY(')]
-    f.close()
+    with open(filename) as f:
+        li = [x for x in map(str.strip, f.readlines())
+              if x.startswith('ADD_MANIFEST_CONSTANT(')
+              or x.startswith('MMAP_ENTRY(')]
     li1 = []
     for x in li:
         if x.startswith('ADD_MANIFEST_CONSTANT('):
@@ -574,20 +573,18 @@ def _i_convert_fullfunction(name, li):
 
 # create the list of lines that build inner classes in Environment.__init__
 def _i_create_inner_classes():
-    inner = []
     kclasses = ALL_CLASSES.keys()
     kclasses.sort()
-    for x in kclasses:
-        inner.append(
-            INDENT + INDENT + "self.%s = self.%s(self.__env)\n" % (x, x))
-    return inner
+    return [
+        INDENT + INDENT + "self.%s = self.%s(self.__env)\n" % (x, x)
+        for x in kclasses
+    ]
 
 
 # macro to convert all the read module
 def convert_module(filename):
-    f = open(filename)
-    _i_read_module(f)
-    f.close()
+    with open(filename) as f:
+        _i_read_module(f)
     classes = []
     kclasses = ALL_CLASSES.keys()
     kclasses.sort()
